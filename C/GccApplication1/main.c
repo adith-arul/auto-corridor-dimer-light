@@ -45,17 +45,38 @@
 
 
 */
+#include <avr/io.h>
+#include <avr/pgmspace.h>
+
+
+const uint16_t DEFAULT_THRESHOLD PROGMEM = 512;  // Default Threshold value stored only in FLASH
+
+
+uint16_t threshold;   // Running copy of threshold
+
+void init(){
+	
+	DDRA &= ~(1 << PORTA6);			// A6 as input, leave other bits untouched
+	PORTA &= ~(1 << PORTA6);	// disable pull up in A6, since A6 is LDR, leave other bits untouched
+	ADMUX = (1 << REFS0) | 6; // Select reference voltage (REFS0 == aVCC), 6 is ADC channel (last 0:4 bits to choose ADC channel)
+	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1);  // /64 prescaling, voltage needs time to get to full value, thus require prescaling
+}
+
+uint16_t read_adc(void)
+{
+	ADCSRA |= (1 << ADSC);          // start a conversion
+	while (ADCSRA & (1 << ADSC));   // wait till conversion is done.
+	return ADC;
+}
 
 int main(void)
 {
-    /* Replace with your application code */
-    while (1)
-    {
-		// if bbuttton {
-			
-		}
-		
-		
-    }
+	init();
+	threshold = pgm_read_word(&DEFAULT_THRESHOLD);  // get value from FLASh and store in SRAM variable threshold
+	
+	while (1)
+	{
+	}
 }
+
 
